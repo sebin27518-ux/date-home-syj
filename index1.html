@@ -75,12 +75,12 @@
   .ic-40{ width:40px; height:40px; }
 
   /* ---------- Login ---------- */
-  #inviteScreen, #coupleScreen, #loginScreen, #identityScreen, #ddaySetupScreen{
+  #inviteScreen, #loginScreen, #identityScreen, #ddaySetupScreen{
     flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
     padding: 32px 28px; text-align:center; background: var(--grad); color:#fff; min-height:100vh;
   }
   .login-logo{ color:#fff; margin-bottom:10px; }
-  #inviteScreen h1, #coupleScreen h1, #loginScreen h1, #identityScreen h1{ font-size:27px; color:#fff; margin-bottom:4px; letter-spacing:0.5px;}
+  #inviteScreen h1, #loginScreen h1, #identityScreen h1{ font-size:27px; color:#fff; margin-bottom:4px; letter-spacing:0.5px;}
   .login-sub{ color:rgba(255,255,255,0.92); font-size:13.5px; margin-bottom:30px; line-height:1.6;}
   .pin-dots{ display:flex; gap:14px; margin-bottom:26px; }
   .pin-dot{ width:16px; height:16px; border-radius:50%; border:1.5px solid #fff; background:transparent; transition: background 0.15s, transform 0.15s; }
@@ -98,8 +98,7 @@
   .google-signin-btn{ display:flex; align-items:center; justify-content:center; gap:9px; width:100%; max-width:280px; padding:12px 0; border-radius:14px; background:#fff; color:#3c4043; font-weight:700; font-size:13.5px; box-shadow: var(--shadow-sm); }
   .google-signin-btn:active{ transform:scale(0.97); }
   .google-signin-btn:disabled{ opacity:0.7; }
-  .couple-code-box{ width:100%; max-width:280px; padding:16px 0; border-radius:14px; background:rgba(255,255,255,0.14); border:1.5px dashed rgba(255,255,255,0.5); color:#fff; font-size:28px; font-weight:800; letter-spacing:4px; text-align:center; margin-bottom:14px; font-family:'Gowun Batang',serif; }
-  #ddaySetupScreen input[type=text], #ddaySetupScreen input[type=date], #inviteScreen input[type=text], #coupleScreen input[type=text]{
+  #ddaySetupScreen input[type=text], #ddaySetupScreen input[type=date], #inviteScreen input[type=text]{
     width:100%; max-width:280px; padding:12px 14px; border-radius:12px; border:none; margin-bottom:12px; font-size:14px; background:#fff; color:var(--ink);
   }
   .onboard-btn{
@@ -113,8 +112,6 @@
   .avatar-chip{ width:22px; height:22px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:10.5px; font-weight:800; color:#fff; }
   .avatar-chip.a-엉지{ background: var(--green); }
   .avatar-chip.a-세비{ background: var(--blue); }
-  .avatar-chip.member-0{ background: var(--green); }
-  .avatar-chip.member-1{ background: var(--blue); }
 
   header.app-header{ padding: 16px 20px 14px; display:flex; flex-direction:column; gap:10px; background: var(--grad); position:sticky; top:0; z-index:5; border-radius: 0 0 22px 22px; box-shadow: var(--shadow-sm); }
   header.app-header .header-top{ display:flex; align-items:center; justify-content:space-between; }
@@ -223,8 +220,6 @@
   .author-tag{ font-size:10.5px; padding:3px 8px; border-radius:8px; font-weight:800; color:#fff; }
   .author-tag.author-엉지{ background: var(--green); }
   .author-tag.author-세비{ background: var(--blue); }
-  .author-tag.member-0{ background: var(--green); }
-  .author-tag.member-1{ background: var(--blue); }
   .type-tag{ font-size:10.5px; padding:3px 8px; border-radius:8px; font-weight:800; background: var(--blue-soft); color:var(--blue-deep); }
   .diary-entry .de-actions{ display:flex; gap:10px; font-size:12px; color: var(--ink-soft); flex-shrink:0; }
   .diary-entry img{ width:100%; max-height:320px; object-fit:contain; background:var(--green-soft); border-radius:10px; margin-bottom:8px; loading:lazy; }
@@ -253,8 +248,6 @@
   .cal-cell .dot{ width:5px; height:5px; border-radius:50%; }
   .cal-cell .dot.dot-엉지{ background: var(--green); }
   .cal-cell .dot.dot-세비{ background: var(--blue); }
-  .cal-cell .dot.member-0{ background: var(--green); }
-  .cal-cell .dot.member-1{ background: var(--blue); }
   .cal-cell .mark-diamond{ width:6px; height:6px; background: var(--blue-deep); transform:rotate(45deg); border-radius:1px; }
   .cal-dday-banner{ background: var(--grad); color:#fff; border-radius:16px; padding:16px 16px; margin-bottom:16px; text-align:center; }
   .cal-dday-banner .num{ font-size:23px; font-weight:800; font-family:'Gowun Batang',serif; }
@@ -340,7 +333,6 @@
 <body>
 <div class="shell" id="shell">
   <div id="inviteScreen" class="hide"></div>
-  <div id="coupleScreen" class="hide"></div>
   <div id="loginScreen" class="hide"></div>
   <div id="identityScreen" class="hide"></div>
   <div id="ddaySetupScreen" class="hide"></div>
@@ -452,30 +444,12 @@ function I(name, cls){ return '<span class="ic '+(cls||'ic-18')+'">'+ICONS[name]
 
 /* =====================================================================
    storage helpers
-   - shared=true  -> Firestore, scoped to the current couple (both phones in
-     the same couple see the same data; different couples never see each
-     other's) - see coupleDataCollection() below for exactly how that's
-     resolved.
-   - shared=false -> browser localStorage (only remembers "who am I" on this
-     device, per couple)
+   - shared=true  -> Firestore collection "appData" (both phones see the same data)
+   - shared=false -> browser localStorage (only remembers "who am I" on this device)
    Every other part of the app calls sGet/sSet/sDelete/sList/sGetMany exactly
    like before - only this section talks to Firebase.
    ===================================================================== */
-// Where a couple's data actually lives. The very first couple (엉지·세비) keeps
-// using the original flat "appData" collection exactly as before - zero
-// migration, zero risk to their existing diary/photos/map. Every couple
-// created after this update gets its own isolated subcollection instead.
-function coupleDataCollection(){
-  if(state.coupleCode === LEGACY_COUPLE_CODE) return db.collection('appData');
-  return db.collection('couples').doc(state.coupleCode).collection('data');
-}
-// A few keys (the invite-code app gate) need to stay OUTSIDE any couple's
-// data, since they're checked before we even know which couple this is -
-// pass global=true to route straight to the top-level "appData" collection.
-function resolveDataCollection(global){
-  return global ? db.collection('appData') : coupleDataCollection();
-}
-async function sGet(key, shared, fallback, global){
+async function sGet(key, shared, fallback){
   if(!shared){
     try{
       const raw = localStorage.getItem('local:'+key);
@@ -484,7 +458,7 @@ async function sGet(key, shared, fallback, global){
   }
   for(let attempt=0; attempt<2; attempt++){
     try{
-      const doc = await resolveDataCollection(global).doc(key).get();
+      const doc = await db.collection('appData').doc(key).get();
       return doc.exists ? doc.data().value : fallback;
     }catch(e){
       if(attempt===0){ await new Promise(r=>setTimeout(r,250)); continue; }
@@ -493,13 +467,13 @@ async function sGet(key, shared, fallback, global){
   }
   return fallback;
 }
-async function sSet(key, value, shared, global){
+async function sSet(key, value, shared){
   if(!shared){
     try{ localStorage.setItem('local:'+key, JSON.stringify(value)); return true; }
     catch(e){ return false; }
   }
   for(let attempt=0; attempt<2; attempt++){
-    try{ await resolveDataCollection(global).doc(key).set({ value: value, updatedAt: Date.now() }); return true; }
+    try{ await db.collection('appData').doc(key).set({ value: value, updatedAt: Date.now() }); return true; }
     catch(e){
       if(attempt===0){ await new Promise(r=>setTimeout(r,400)); continue; }
       return false;
@@ -507,13 +481,13 @@ async function sSet(key, value, shared, global){
   }
   return false;
 }
-async function sDelete(key, shared, global){
+async function sDelete(key, shared){
   if(!shared){
     try{ localStorage.removeItem('local:'+key); return true; }
     catch(e){ return false; }
   }
   for(let attempt=0; attempt<2; attempt++){
-    try{ await resolveDataCollection(global).doc(key).delete(); return true; }
+    try{ await db.collection('appData').doc(key).delete(); return true; }
     catch(e){
       if(attempt===0){ await new Promise(r=>setTimeout(r,400)); continue; }
       return false;
@@ -535,7 +509,7 @@ async function sList(prefix, shared){
   for(let attempt=0; attempt<2; attempt++){
     try{
       const end = prefix + '\uf8ff';
-      const snap = await coupleDataCollection()
+      const snap = await db.collection('appData')
         .where(firebase.firestore.FieldPath.documentId(), '>=', prefix)
         .where(firebase.firestore.FieldPath.documentId(), '<', end)
         .get();
@@ -561,7 +535,7 @@ async function sListWithValues(prefix, shared){
   for(let attempt=0; attempt<2; attempt++){
     try{
       const end = prefix + '\uf8ff';
-      const snap = await coupleDataCollection()
+      const snap = await db.collection('appData')
         .where(firebase.firestore.FieldPath.documentId(), '>=', prefix)
         .where(firebase.firestore.FieldPath.documentId(), '<', end)
         .get();
@@ -853,9 +827,6 @@ const MUNI_DATA = {"jeju":{"viewW":600.0,"viewH":330.2,"list":[{"codes":["39020"
 const state = {
   tab: 'home',
   currentUser: null,
-  coupleCode: null,
-  coupleMemberNames: [],
-  googleUser: null,
   pinBuffer: '',
   pinMode: null,
   pinTemp: '',
@@ -888,17 +859,6 @@ function todayStr(){
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
 
-// ---- couple member helpers (used for avatar colors, filter chips, "누구세요" etc.) ----
-// Every couple - old or new - is just "a coupleCode + up to two member nicknames".
-// Colors/classes are assigned by POSITION in that list (member-0, member-1) instead
-// of by the specific name, so this works for any couple's chosen nicknames.
-function memberIndex(name){
-  const i = (state.coupleMemberNames||[]).indexOf(name);
-  return i>=0 ? i : 0;
-}
-function memberClass(name){ return 'member-'+memberIndex(name); }
-function memberInitial(name){ return name ? name[0] : '?'; }
-
 const FOOD_LIST = ['떡볶이','짜장면','짬뽕','초밥','파스타','스테이크','치킨','피자','삼겹살','곱창','마라탕','훠궈',
   '라멘','우동','김치찌개','부대찌개','냉면','국밥','타코','수제버거','샌드위치','쌀국수','딤섬','브런치'];
 const DATE_LIST = ['영화관 가기','피시방 가기','방탈출 카페','볼링장','노래방','드라이브','한강 피크닉','전시회 관람',
@@ -908,7 +868,6 @@ const ROULETTE_STARTER = ['영화관','맛집 탐방','산책','드라이브','�
 const MOODS = ['😍','🥰','😊','😌','😢','😡'];
 const CULTURE_TYPES = [{key:'movie', label:'영화'}, {key:'book', label:'책'}, {key:'exhibit', label:'전시'}];
 const SEASONS = [{key:'spring', label:'봄'}, {key:'summer', label:'여름'}, {key:'autumn', label:'가을'}, {key:'winter', label:'겨울'}];
-const LEGACY_COUPLE_CODE = 'ENGJISEBI'; // 지금 엉지·세비가 쓰고 있던 데이터가 그대로 남아있는 곳
 
 function escapeHtml(str){
   return String(str||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -945,7 +904,8 @@ function mountTab(){
       '<div class="section-title">'+I('note')+'지난 기록들</div>'+
       '<div class="filter-row" id="diaryFilterRow">'+
         '<button class="filter-chip '+(state.diaryFilter==='all'?'active':'')+'" data-filter="all">전체</button>'+
-        (state.coupleMemberNames||[]).map(n=>'<button class="filter-chip '+(state.diaryFilter===n?'active':'')+'" data-filter="'+escapeHtml(n)+'"><span class="avatar-chip '+memberClass(n)+'">'+memberInitial(n)+'</span>'+escapeHtml(n)+'</button>').join('')+
+        '<button class="filter-chip '+(state.diaryFilter==='엉지'?'active':'')+'" data-filter="엉지"><span class="avatar-chip a-엉지">엉</span>엉지</button>'+
+        '<button class="filter-chip '+(state.diaryFilter==='세비'?'active':'')+'" data-filter="세비"><span class="avatar-chip a-세비">세</span>세비</button>'+
       '</div>'+
       '<div id="diaryListSection"></div>';
     fillDiaryForm();
@@ -985,7 +945,7 @@ function mountTab(){
 
 function refreshHeader(){
   const pill = document.getElementById('userPill');
-  pill.innerHTML = state.currentUser ? ('<span class="avatar-chip '+memberClass(state.currentUser)+'">'+memberInitial(state.currentUser)+'</span>'+escapeHtml(state.currentUser)) : '';
+  pill.innerHTML = state.currentUser ? ('<span class="avatar-chip a-'+state.currentUser+'">'+state.currentUser[0]+'</span>'+state.currentUser) : '';
   document.getElementById('settingsBtn').innerHTML = I('gear','ic-20');
   document.querySelectorAll('[data-icon]').forEach(el=>{ el.innerHTML = ICONS[el.dataset.icon] || ''; });
   const bar = document.getElementById('ddayPinBar');
@@ -1021,7 +981,7 @@ function attachBackRowHandlers(){
 async function checkInviteGate(){
   const alreadyVerified = await sGet('invite-verified', false, false);
   if(alreadyVerified) return true;
-  const code = await sGet('invite-code', true, null, true);
+  const code = await sGet('invite-code', true, null);
   if(!code) return true;
   renderInviteScreen(code);
   return false;
@@ -1043,202 +1003,14 @@ function renderInviteScreen(expectedCode, errMsg){
     if(val.toLowerCase() === String(expectedCode).trim().toLowerCase()){
       sSet('invite-verified', true, false);
       screen.classList.add('hide');
-      resolveCouple();
+      document.getElementById('loginScreen').classList.remove('hide');
+      initAuth();
     } else {
       renderInviteScreen(expectedCode, '코드가 맞지 않아요. 다시 확인해주세요');
     }
   };
   document.getElementById('inviteSubmitBtn').addEventListener('click', submit);
   input.addEventListener('keydown', (e)=>{ if(e.key==='Enter') submit(); });
-}
-
-/* =================================================================
-   COUPLE PAIRING
-   - Every couple (old or new) is just "a coupleCode + up to two member
-     nicknames". A Google account is linked to at most one coupleCode
-     (users/{uid}.coupleCode); a device without Google remembers its
-     coupleCode locally instead. Either way, once state.coupleCode is set,
-     the rest of the app (PIN, "누구세요", diary/지도/etc.) works exactly like
-     it always did - it's just scoped to that one couple's data now.
-   ================================================================= */
-function randomCoupleCode(){
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // 헷갈리는 0/O, 1/I는 빼요
-  let out = '';
-  for(let i=0;i<6;i++) out += chars[Math.floor(Math.random()*chars.length)];
-  return out;
-}
-// Resolves the first firebase auth state (persisted Google session, if any)
-// exactly once at boot - so we know from the very start whether someone's
-// already signed in with Google on this browser.
-function waitForAuthUser(){
-  return new Promise((resolve)=>{
-    const unsub = auth.onAuthStateChanged((user)=>{ unsub(); resolve(user); });
-  });
-}
-async function createCouple(names){
-  for(let attempt=0; attempt<3; attempt++){
-    const code = randomCoupleCode();
-    try{
-      const ref = db.collection('couples').doc(code);
-      const existing = await ref.get();
-      if(existing.exists) continue; // 코드가 우연히 겹쳤을 때만 다시 시도 (거의 없음)
-      await ref.set({ createdAt: Date.now(), memberNames: names });
-      if(state.googleUser){
-        await db.collection('users').doc(state.googleUser.uid).set({ coupleCode: code }, { merge:true });
-      }
-      return code;
-    }catch(e){ /* 다시 시도 */ }
-  }
-  return null;
-}
-// Returns the couple's (normalized) code on success, or false if the code
-// doesn't exist.
-async function joinCouple(rawCode){
-  const code = String(rawCode||'').trim().toUpperCase();
-  if(!code) return false;
-  try{
-    const ref = db.collection('couples').doc(code);
-    const doc = await ref.get();
-    if(!doc.exists){
-      if(code === LEGACY_COUPLE_CODE){
-        // 엉지·세비가 처음 이 코드로 들어올 때만, 지금까지 쓰던 데이터를 위한
-        // 커플 문서를 하나 만들어줘요 (실제 일기/사진은 그대로 appData에 남아있어요).
-        await ref.set({ createdAt: Date.now(), memberNames: ['엉지','세비'] });
-      } else {
-        return false;
-      }
-    }
-  }catch(e){ return false; }
-  if(state.googleUser){
-    try{ await db.collection('users').doc(state.googleUser.uid).set({ coupleCode: code }, { merge:true }); }
-    catch(e){ /* 실패해도 치명적이지 않아요 - 다음에 코드를 다시 입력하면 돼요 */ }
-  }
-  return code;
-}
-async function enterCouple(code){
-  state.coupleCode = code;
-  try{
-    const doc = await db.collection('couples').doc(code).get();
-    state.coupleMemberNames = (doc.exists && doc.data().memberNames) ? doc.data().memberNames : [];
-  }catch(e){ state.coupleMemberNames = []; }
-  try{ localStorage.setItem('local:couple-code', code); }catch(e){}
-  document.getElementById('coupleScreen').classList.add('hide');
-  document.getElementById('inviteScreen').classList.add('hide');
-  document.getElementById('loginScreen').classList.remove('hide');
-  initAuth();
-}
-// The main "who is this and which couple do they belong to" resolver - runs
-// once at boot (after the invite gate) and again right after a fresh Google
-// sign-in from the onboarding screen.
-async function resolveCouple(){
-  if(state.googleUser){
-    let mapping = null;
-    try{
-      const doc = await db.collection('users').doc(state.googleUser.uid).get();
-      if(doc.exists) mapping = doc.data();
-    }catch(e){ /* 네트워크 문제 - 온보딩 화면으로 안내 */ }
-    if(mapping && mapping.coupleCode){ await enterCouple(mapping.coupleCode); return; }
-    renderCoupleOnboardScreen('choose');
-    return;
-  }
-  let cached = null;
-  try{ cached = localStorage.getItem('local:couple-code'); }catch(e){}
-  if(cached){ await enterCouple(cached); return; }
-  renderCoupleOnboardScreen('choose');
-}
-
-function renderCoupleOnboardScreen(mode){
-  const screen = document.getElementById('coupleScreen');
-  screen.classList.remove('hide');
-  document.getElementById('inviteScreen').classList.add('hide');
-
-  if(mode==='create'){
-    screen.innerHTML =
-      '<div class="login-logo">'+I('flag','ic-40')+'</div>'+
-      '<h1>커플 만들기</h1>'+
-      '<div class="login-sub">두 사람이 쓸 닉네임을 정해주세요.<br>나중에 각자 이 중 하나를 골라서 써요.</div>'+
-      '<input type="text" id="coupleName1Input" placeholder="닉네임 1" maxlength="10">'+
-      '<input type="text" id="coupleName2Input" placeholder="닉네임 2" maxlength="10">'+
-      '<button class="onboard-btn" id="coupleCreateSubmitBtn">만들기</button>'+
-      '<div class="login-msg" id="coupleCreateMsg"></div>'+
-      '<div class="login-hint" id="coupleBackBtn" style="cursor:pointer;">‹ 뒤로</div>';
-    document.getElementById('coupleBackBtn').addEventListener('click', ()=>renderCoupleOnboardScreen('choose'));
-    document.getElementById('coupleCreateSubmitBtn').addEventListener('click', async ()=>{
-      const n1 = document.getElementById('coupleName1Input').value.trim();
-      const n2 = document.getElementById('coupleName2Input').value.trim();
-      if(!n1 || !n2){ document.getElementById('coupleCreateMsg').textContent = '둘 다 입력해주세요'; return; }
-      const btn = document.getElementById('coupleCreateSubmitBtn');
-      btn.disabled = true; btn.textContent = '만드는 중...';
-      const code = await createCouple([n1, n2]);
-      if(!code){
-        btn.disabled = false; btn.textContent = '만들기';
-        document.getElementById('coupleCreateMsg').textContent = '만들기에 실패했어요. 다시 시도해주세요';
-        return;
-      }
-      renderCoupleCreatedScreen(code);
-    });
-    return;
-  }
-
-  if(mode==='join'){
-    screen.innerHTML =
-      '<div class="login-logo">'+I('pin','ic-40')+'</div>'+
-      '<h1>커플 코드 입력</h1>'+
-      '<div class="login-sub">상대방에게 받은 코드를 입력해주세요.</div>'+
-      '<input type="text" id="coupleJoinInput" placeholder="커플 코드" autocapitalize="off" autocorrect="off" spellcheck="false">'+
-      '<button class="onboard-btn" id="coupleJoinSubmitBtn">들어가기</button>'+
-      '<div class="login-msg" id="coupleJoinMsg"></div>'+
-      '<div class="login-hint" id="coupleBackBtn2" style="cursor:pointer;">‹ 뒤로</div>';
-    document.getElementById('coupleBackBtn2').addEventListener('click', ()=>renderCoupleOnboardScreen('choose'));
-    const submit = async ()=>{
-      const raw = document.getElementById('coupleJoinInput').value.trim();
-      if(!raw){ document.getElementById('coupleJoinMsg').textContent = '코드를 입력해주세요'; return; }
-      const btn = document.getElementById('coupleJoinSubmitBtn');
-      btn.disabled = true; btn.textContent = '확인 중...';
-      const code = await joinCouple(raw);
-      if(!code){
-        btn.disabled = false; btn.textContent = '들어가기';
-        document.getElementById('coupleJoinMsg').textContent = '그런 코드를 찾을 수 없어요';
-        return;
-      }
-      await enterCouple(code);
-    };
-    document.getElementById('coupleJoinSubmitBtn').addEventListener('click', submit);
-    document.getElementById('coupleJoinInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter') submit(); });
-    return;
-  }
-
-  // mode === 'choose' (default)
-  screen.innerHTML =
-    '<div class="login-logo">'+I('logo','ic-40')+'</div>'+
-    '<h1>DATE</h1>'+
-    '<div class="login-sub">'+(state.googleUser ? escapeHtml(state.googleUser.displayName||state.googleUser.email||'')+'님, 반가워요!<br>' : '')+
-      '커플을 새로 만들거나, 이미 있는 커플 코드로 들어갈 수 있어요.</div>'+
-    '<button class="onboard-btn" id="coupleCreateBtn">'+I('flag','ic-16')+'커플 만들기</button>'+
-    '<button class="onboard-btn" id="coupleJoinBtn" style="margin-top:10px; background:transparent; color:#fff; border:1.5px solid rgba(255,255,255,0.5);">'+I('pin','ic-16')+'커플 코드로 들어가기</button>'+
-    (state.googleUser ? '' :
-      '<div class="login-divider"><span>또는</span></div>'+
-      '<button class="google-signin-btn" id="coupleGoogleBtn">'+GOOGLE_G_ICON+'<span>Google 계정으로 계속하기</span></button>');
-  document.getElementById('coupleCreateBtn').addEventListener('click', ()=>renderCoupleOnboardScreen('create'));
-  document.getElementById('coupleJoinBtn').addEventListener('click', ()=>renderCoupleOnboardScreen('join'));
-  const gbtn = document.getElementById('coupleGoogleBtn');
-  if(gbtn) gbtn.addEventListener('click', ()=>handleGoogleSignIn(resolveCouple, 'coupleGoogleBtn'));
-}
-
-function renderCoupleCreatedScreen(code){
-  const screen = document.getElementById('coupleScreen');
-  screen.innerHTML =
-    '<div class="login-logo">'+I('flag','ic-40')+'</div>'+
-    '<h1>커플이 만들어졌어요!</h1>'+
-    '<div class="login-sub">이 코드를 상대방에게 보내주세요.<br>상대방도 이 코드를 입력하면 같은 공간에 들어와요.</div>'+
-    '<div class="couple-code-box">'+escapeHtml(code)+'</div>'+
-    '<button class="onboard-btn" id="coupleCodeCopyBtn">코드 복사하기</button>'+
-    '<button class="onboard-btn" id="coupleCodeContinueBtn" style="margin-top:10px; background:transparent; color:#fff; border:1.5px solid rgba(255,255,255,0.5);">계속하기</button>';
-  document.getElementById('coupleCodeCopyBtn').addEventListener('click', async ()=>{
-    try{ await navigator.clipboard.writeText(code); showToast('코드를 복사했어요'); }
-    catch(e){ showToast('복사에 실패했어요. 직접 적어서 보내주세요'); }
-  });
-  document.getElementById('coupleCodeContinueBtn').addEventListener('click', ()=>enterCouple(code));
 }
 
 /* =================================================================
@@ -1268,13 +1040,6 @@ function renderLogin(subMsg, errMsg){
     return '<button class="key" data-key="'+k+'">'+k+'</button>';
   }).join('');
 
-  // 이미 Google 계정으로 로그인되어 있는 상태라면, 굳이 또 그 버튼을 보여줄
-  // 필요가 없어요 - 이미 그 계정으로 들어와 있으니까요.
-  const googleSection = state.googleUser
-    ? ''
-    : '<div class="login-divider"><span>또는</span></div>'+
-      '<button class="google-signin-btn" id="googleSignInBtn">'+GOOGLE_G_ICON+'<span>Google 계정으로 계속하기</span></button>';
-
   document.getElementById('loginScreen').innerHTML =
     '<div class="login-logo">'+I('logo','ic-40')+'</div>'+
     '<h1>DATE</h1>'+
@@ -1283,13 +1048,13 @@ function renderLogin(subMsg, errMsg){
     '<div class="keypad">'+keysHtml+'</div>'+
     '<div class="login-msg">'+(errMsg||'')+'</div>'+
     (state.pinMode==='login' ? '<div class="login-hint">비밀번호를 잊었다면 둘이 상의해서 다시 정해요 :)</div>' : '')+
-    googleSection;
+    '<div class="login-divider"><span>또는</span></div>'+
+    '<button class="google-signin-btn" id="googleSignInBtn">'+GOOGLE_G_ICON+'<span>Google 계정으로 계속하기</span></button>';
 
   document.querySelectorAll('.key[data-key]').forEach(btn=>{
     btn.addEventListener('click', ()=>onKeyPress(btn.dataset.key));
   });
-  const googleBtn = document.getElementById('googleSignInBtn');
-  if(googleBtn) googleBtn.addEventListener('click', ()=>handleGoogleSignIn(afterUnlock));
+  document.getElementById('googleSignInBtn').addEventListener('click', handleGoogleSignIn);
 }
 
 const GOOGLE_G_ICON = '<svg viewBox="0 0 48 48" width="18" height="18"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l6-6C34.6 5.1 29.6 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21 21-9.4 21-21c0-1.2-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.6 18.9 13 24 13c3.1 0 5.8 1.1 8 3l6-6C34.6 5.1 29.6 3 24 3 16 3 9.1 7.5 6.3 14.7z"/><path fill="#4CAF50" d="M24 45c5.5 0 10.4-1.9 14.2-5.1l-6.6-5.4C29.5 36.4 26.9 37 24 37c-5.2 0-9.6-3.1-11.3-7.5l-6.6 5C9 41.4 15.9 45 24 45z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.3 5.7l6.6 5.4C41.5 36.3 45 30.9 45 24c0-1.2-.1-2.4-.4-3.5z"/></svg>';
@@ -1302,14 +1067,13 @@ function isEmbeddedWebview(){
   const ua = navigator.userAgent || '';
   return /KAKAOTALK|Line\/|NAVER\(|FBAN|FBAV|Instagram|; wv\)/i.test(ua);
 }
-async function handleGoogleSignIn(onSuccess, btnId){
+async function handleGoogleSignIn(){
   if(isEmbeddedWebview()){
     showToast('카카오톡 등 인앱 브라우저에서는 Google 로그인이 막혀 있어요. 우측 상단 메뉴에서 "다른 브라우저로 열기"를 눌러주세요');
     return;
   }
-  const btn = document.getElementById(btnId || 'googleSignInBtn');
-  const originalLabel = btn && btn.querySelector('span') ? btn.querySelector('span').textContent : null;
-  if(btn){ btn.disabled = true; if(btn.querySelector('span')) btn.querySelector('span').textContent = '연결하는 중...'; }
+  const btn = document.getElementById('googleSignInBtn');
+  if(btn){ btn.disabled = true; btn.querySelector('span').textContent = '연결하는 중...'; }
   try{
     const provider = new firebase.auth.GoogleAuthProvider();
     // 홈 화면에 추가해서 쓰는 "독립 실행" 모드에서는 팝업창이 뜨지 않는 경우가
@@ -1319,11 +1083,10 @@ async function handleGoogleSignIn(onSuccess, btnId){
       await auth.signInWithRedirect(provider);
       return; // 구글 로그인 페이지로 이동했다가 돌아오면 아래 boot()에서 이어서 처리돼요
     }
-    const result = await auth.signInWithPopup(provider);
-    state.googleUser = result.user;
-    if(onSuccess) await onSuccess(); else await resolveCouple();
+    await auth.signInWithPopup(provider);
+    afterUnlock();
   }catch(e){
-    if(btn){ btn.disabled = false; if(btn.querySelector('span') && originalLabel!==null) btn.querySelector('span').textContent = originalLabel; }
+    if(btn){ btn.disabled = false; btn.querySelector('span').textContent = 'Google 계정으로 계속하기'; }
     if(e && e.code === 'auth/popup-blocked'){
       showToast('팝업이 막혔어요. 팝업 허용 후 다시 시도해주세요');
     } else if(e && e.code === 'auth/unauthorized-domain'){
@@ -1380,25 +1143,25 @@ function shakeDots(){
    ================================================================= */
 async function afterUnlock(){
   document.getElementById('loginScreen').classList.add('hide');
-  const myName = await sGet('my-identity:'+state.coupleCode, false, null);
-  if(myName && (state.coupleMemberNames||[]).includes(myName)){ state.currentUser = myName; await proceedToDdayCheck(); }
+  const myName = await sGet('my-identity', false, null);
+  if(myName){ state.currentUser = myName; await proceedToDdayCheck(); }
   else { renderIdentityScreen(); }
 }
 
 function renderIdentityScreen(){
   const screen = document.getElementById('identityScreen');
   screen.classList.remove('hide');
-  const names = (state.coupleMemberNames && state.coupleMemberNames.length>0) ? state.coupleMemberNames : ['첫번째','두번째'];
   screen.innerHTML =
     '<div class="login-logo">'+I('logo','ic-40')+'</div>'+
     '<h1>누구세요?</h1>'+
     '<div class="login-sub">이 기기에서는 이 이름으로 계속 기억할게요.<br>일기와 기록에 자동으로 이름이 붙어요.</div>'+
     '<div class="identity-choices">'+
-      names.map(n=>'<button class="identity-card" data-name="'+escapeHtml(n)+'"><span class="avatar-circle">'+memberInitial(n)+'</span>'+escapeHtml(n)+'</button>').join('')+
+      '<button class="identity-card" data-name="엉지"><span class="avatar-circle">엉</span>엉지</button>'+
+      '<button class="identity-card" data-name="세비"><span class="avatar-circle">세</span>세비</button>'+
     '</div>';
   screen.querySelectorAll('.identity-card').forEach(b=>{
     b.addEventListener('click', async ()=>{
-      await sSet('my-identity:'+state.coupleCode, b.dataset.name, false);
+      await sSet('my-identity', b.dataset.name, false);
       state.currentUser = b.dataset.name;
       screen.classList.add('hide');
       await proceedToDdayCheck();
@@ -1472,9 +1235,7 @@ async function showApp(prefetch){
 
 document.getElementById('settingsBtn').addEventListener('click', ()=>{
   openModal(
-    '<h3>'+I('gear','ic-18')+'설정</h3><p>비밀번호, 내 이름, 로그아웃을 관리할 수 있어요.'+
-    (state.coupleCode && state.coupleCode!==LEGACY_COUPLE_CODE ? '<br>우리 커플 코드: <b>'+escapeHtml(state.coupleCode)+'</b> (상대방이 아직 안 들어왔다면 이 코드를 보내주세요)' : '')+
-    '</p>'+
+    '<h3>'+I('gear','ic-18')+'설정</h3><p>비밀번호, 내 이름, 로그아웃을 관리할 수 있어요.</p>'+
     '<div class="modal-actions stack">'+
     '<button class="btn-secondary" id="switchIdBtn">내 이름 바꾸기 (현재: '+(state.currentUser||'-')+')</button>'+
     '<button class="btn-secondary" id="changePinBtn">비밀번호 변경</button>'+
@@ -1495,7 +1256,7 @@ document.getElementById('settingsBtn').addEventListener('click', ()=>{
 });
 
 async function openInviteCodeSettingModal(){
-  const current = await sGet('invite-code', true, null, true);
+  const current = await sGet('invite-code', true, null);
   openModal(
     '<h3>초대 코드 설정</h3>'+
     '<p>'+(current
@@ -1512,7 +1273,7 @@ async function openInviteCodeSettingModal(){
   document.getElementById('inviteCodeSaveBtn').onclick = async ()=>{
     const val = document.getElementById('inviteCodeSettingInput').value.trim();
     if(!val){ showToast('코드를 입력해주세요'); return; }
-    const ok = await sSet('invite-code', val, true, true);
+    const ok = await sSet('invite-code', val, true);
     if(!ok){ showToast('저장에 실패했어요. 다시 시도해주세요'); return; }
     closeModal();
     showToast('초대 코드를 설정했어요');
@@ -1520,7 +1281,7 @@ async function openInviteCodeSettingModal(){
   const removeBtn = document.getElementById('inviteCodeRemoveBtn');
   if(removeBtn) removeBtn.onclick = ()=>{
     confirmModal('초대 코드를 없앨까요?', '코드를 없애면 링크만 있어도 누구나 로그인 화면까지 들어올 수 있어요.', async ()=>{
-      const ok = await sDelete('invite-code', true, true);
+      const ok = await sDelete('invite-code', true);
       if(!ok){ showToast('삭제에 실패했어요. 다시 시도해주세요'); return; }
       showToast('초대 코드를 없앴어요');
     }, '없애기');
@@ -1528,23 +1289,17 @@ async function openInviteCodeSettingModal(){
 }
 
 function openSwitchIdentityModal(){
-  const names = (state.coupleMemberNames && state.coupleMemberNames.length>0) ? state.coupleMemberNames : ['첫번째','두번째'];
   openModal(
     '<h3>내 이름 바꾸기</h3><p>지금부터 이 기기에서 이 이름으로 기록할게요.</p>'+
     '<div class="modal-actions stack">'+
-      names.map((n,i)=>'<button class="btn-primary" data-setname="'+escapeHtml(n)+'"><span class="avatar-chip '+memberClass(n)+'">'+memberInitial(n)+'</span>'+escapeHtml(n)+'로 바꾸기</button>').join('')+
+      '<button class="btn-primary" id="setName엉지"><span class="avatar-chip a-엉지">엉</span>엉지로 바꾸기</button>'+
+      '<button class="btn-primary" id="setName세비"><span class="avatar-chip a-세비">세</span>세비로 바꾸기</button>'+
       '<button class="btn-secondary" id="idCancel">취소</button>'+
     '</div>'
   );
   document.getElementById('idCancel').onclick = closeModal;
-  document.querySelectorAll('[data-setname]').forEach(btn=>{
-    btn.onclick = async ()=>{
-      const n = btn.dataset.setname;
-      await sSet('my-identity:'+state.coupleCode, n, false);
-      state.currentUser = n;
-      closeModal(); refreshHeader(); showToast(n+'로 설정했어요');
-    };
-  });
+  document.getElementById('setName엉지').onclick = async ()=>{ await sSet('my-identity','엉지', false); state.currentUser='엉지'; closeModal(); refreshHeader(); showToast('엉지로 설정했어요'); };
+  document.getElementById('setName세비').onclick = async ()=>{ await sSet('my-identity','세비', false); state.currentUser='세비'; closeModal(); refreshHeader(); showToast('세비로 설정했어요'); };
 }
 
 function startChangePin(){
@@ -1954,7 +1709,7 @@ function fillDiaryList(){
     : filtered.map(e=>(
         '<div class="diary-entry">'+
           '<div class="de-top">'+
-            '<div class="de-date">'+e.mood+' '+formatDateKor(e.date)+(e.author ? ' <span class="author-tag '+memberClass(e.author)+'">'+escapeHtml(e.author)+'</span>' : '')+'</div>'+
+            '<div class="de-date">'+e.mood+' '+formatDateKor(e.date)+(e.author ? ' <span class="author-tag author-'+e.author+'">'+e.author+'</span>' : '')+'</div>'+
             '<div class="de-actions"><button data-edit="'+e.id+'">'+I('edit','ic-16')+'</button><button data-del="'+e.id+'">'+I('trash','ic-16')+'</button></div>'+
           '</div>'+
           (e.photo ? '<img src="'+e.photo+'" loading="lazy">' : '')+
@@ -2018,7 +1773,7 @@ function renderCalendar(){
     const isToday = dateStr===today;
     const authors = Array.from(new Set(entries.map(e=>e.author).filter(Boolean)));
     let markHtml = '';
-    if(authors.length>0) markHtml = '<div class="dotrow">'+authors.map(a=>'<div class="dot '+memberClass(a)+'"></div>').join('')+'</div>';
+    if(authors.length>0) markHtml = '<div class="dotrow">'+authors.map(a=>'<div class="dot dot-'+a+'"></div>').join('')+'</div>';
     else if(marked) markHtml = '<div class="mark-diamond"></div>';
     cells += '<div class="cal-cell '+(isDateDay?'has-date':'')+' '+(isToday?'today':'')+'" data-date="'+dateStr+'">'+d+markHtml+'</div>';
   }
@@ -2030,7 +1785,6 @@ function renderCalendar(){
     const primary = state.ddayList[0];
     ddayBanner = '<div class="cal-dday-banner"><div class="num">'+ddayLabel(dayDiff(primary.date))+'</div><div class="lbl">'+escapeHtml(primary.label)+'</div></div>';
   }
-  const legendNames = state.coupleMemberNames && state.coupleMemberNames.length>0 ? state.coupleMemberNames : ['첫번째','두번째'];
   return ''+
   '<div class="section-title">'+I('calendar')+'우리의 달력</div>'+
   ddayBanner+
@@ -2038,7 +1792,8 @@ function renderCalendar(){
     '<div class="cal-header"><button id="prevMonthBtn">‹</button><div class="cal-title">'+y+'년 '+(m+1)+'월</div><button id="nextMonthBtn">›</button></div>'+
     '<div class="cal-grid">'+['일','월','화','수','목','금','토'].map(d=>'<div class="cal-dow">'+d+'</div>').join('')+cells+'</div>'+
     '<div class="cal-legend">'+
-      legendNames.map((n,i)=>'<span><div class="dot member-'+i+'"></div>'+escapeHtml(n)+' 일기</span>').join('')+
+      '<span><div class="dot" style="background:var(--green);"></div>엉지 일기</span>'+
+      '<span><div class="dot" style="background:var(--blue);"></div>세비 일기</span>'+
       '<span><div class="mark-diamond"></div>데이트 표시</span>'+
     '</div>'+
   '</div>';
@@ -2059,7 +1814,7 @@ async function toggleDateMark(dateStr){
 
 function openEntryViewModal(entry){
   openModal(
-    '<h3>'+entry.mood+' '+formatDateKor(entry.date)+' <span class="author-tag '+memberClass(entry.author)+'">'+escapeHtml(entry.author)+'</span></h3>'+
+    '<h3>'+entry.mood+' '+formatDateKor(entry.date)+' <span class="author-tag author-'+entry.author+'">'+entry.author+'</span></h3>'+
     (entry.photo ? '<img src="'+entry.photo+'" style="width:100%;border-radius:10px;margin-bottom:10px;">' : '')+
     '<p>'+escapeHtml(entry.text)+'</p>'+
     '<div class="modal-actions"><button class="btn-secondary" id="calClose">닫기</button><button class="btn-primary" id="calEdit">수정하기</button></div>'
@@ -2087,7 +1842,7 @@ function attachCalendarHandlers(){
         openModal(
           '<h3>'+formatDateKor(dateStr)+'</h3><p>이 날 쓴 일기가 여러 개예요.</p>'+
           entries.map(e=>(
-            '<div class="modal-list-entry"><span>'+e.mood+' <span class="author-tag '+memberClass(e.author)+'">'+escapeHtml(e.author)+'</span></span>'+
+            '<div class="modal-list-entry"><span>'+e.mood+' <span class="author-tag author-'+e.author+'">'+e.author+'</span></span>'+
             '<button class="btn-secondary" data-view="'+e.id+'" style="padding:6px 10px;">보기</button></div>'
           )).join('')+
           '<div class="modal-actions"><button class="btn-secondary" id="listClose">닫기</button></div>'
@@ -2522,7 +2277,7 @@ function fillCultureList(){
     : filtered.map(e=>(
         '<div class="diary-entry">'+
           '<div class="de-top">'+
-            '<div class="de-date"><span class="type-tag">'+typeLabel(e.type)+'</span> '+escapeHtml(e.title)+(e.author ? ' <span class="author-tag '+memberClass(e.author)+'">'+escapeHtml(e.author)+'</span>' : '')+'</div>'+
+            '<div class="de-date"><span class="type-tag">'+typeLabel(e.type)+'</span> '+escapeHtml(e.title)+(e.author ? ' <span class="author-tag author-'+e.author+'">'+e.author+'</span>' : '')+'</div>'+
             '<div class="de-actions"><button data-cedit="'+e.id+'">'+I('edit','ic-16')+'</button><button data-cdel="'+e.id+'">'+I('trash','ic-16')+'</button></div>'+
           '</div>'+
           '<div style="font-size:11.5px;color:var(--ink-soft);margin-bottom:6px;">'+formatDateKor(e.date)+' · '+starsHtml(e.rating,false)+'</div>'+
@@ -2702,17 +2457,22 @@ document.getElementById('bottomNav').addEventListener('click', (e)=>{
 });
 
 /* ===================== boot ===================== */
-// Figures out (once) whether there's already a signed-in Google account on
-// this browser, then clears the app-wide invite gate, then works out which
-// couple this is (resolveCouple()) before ever showing the PIN screen.
+// If the person just came back from a Google redirect sign-in (used for the
+// "홈 화면에 추가" standalone mode), remember that first, but the invite-code
+// gate (if one is set) still has to be cleared before anything else shows.
 (async function boot(){
-  try{ await auth.getRedirectResult(); }catch(e){ /* no pending redirect, or the person cancelled it */ }
-  state.googleUser = await waitForAuthUser();
+  let redirectedUser = null;
+  try{
+    const result = await auth.getRedirectResult();
+    if(result && result.user){ redirectedUser = result.user; }
+  }catch(e){ /* no pending redirect, or the person cancelled it - fall through to normal login */ }
 
   const passedGate = await checkInviteGate();
-  if(!passedGate) return; // invite screen is showing; its submit handler calls resolveCouple() itself
+  if(!passedGate) return; // invite screen is showing; it calls initAuth() itself once the code is right
 
-  await resolveCouple();
+  document.getElementById('loginScreen').classList.remove('hide');
+  if(redirectedUser){ afterUnlock(); return; }
+  initAuth();
 })();
 
 })();
