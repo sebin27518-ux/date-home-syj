@@ -77,7 +77,7 @@
   /* ---------- Login ---------- */
   #inviteScreen, #coupleScreen, #loginScreen, #identityScreen, #ddaySetupScreen{
     flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    padding: 32px 28px; text-align:center; background: var(--grad); color:#fff; min-height:100vh; min-height:100dvh;
+    padding: 32px 28px; text-align:center; background: var(--grad); color:#fff; min-height:100vh;
   }
   .login-logo{ color:#fff; margin-bottom:10px; }
   #inviteScreen h1, #coupleScreen h1, #loginScreen h1, #identityScreen h1{ font-size:27px; color:#fff; margin-bottom:4px; letter-spacing:0.5px;}
@@ -99,8 +99,8 @@
   .google-signin-btn:active{ transform:scale(0.97); }
   .google-signin-btn:disabled{ opacity:0.7; }
   .couple-code-box{ width:100%; max-width:280px; padding:16px 0; border-radius:14px; background:rgba(255,255,255,0.14); border:1.5px dashed rgba(255,255,255,0.5); color:#fff; font-size:28px; font-weight:800; letter-spacing:4px; text-align:center; margin-bottom:14px; font-family:'Gowun Batang',serif; }
-  #ddaySetupScreen input[type=text], #ddaySetupScreen .date-box, #inviteScreen input[type=text], #coupleScreen input[type=text]{
-    width:100%; max-width:280px; padding:12px 14px; border-radius:12px; border:none; margin-bottom:12px; font-size:16px; background:#fff; color:var(--ink);
+  #ddaySetupScreen input[type=text], #ddaySetupScreen input[type=date], #inviteScreen input[type=text], #coupleScreen input[type=text]{
+    width:100%; max-width:280px; padding:12px 14px; border-radius:12px; border:none; margin-bottom:12px; font-size:14px; background:#fff; color:var(--ink);
   }
   .onboard-btn{
     display:flex; align-items:center; justify-content:center; gap:6px; width:100%; max-width:280px;
@@ -181,23 +181,10 @@
   .mood-btn{ width:42px; height:42px; border-radius:50%; background: var(--bg); border:1.5px solid var(--line); font-size:19px; display:flex; align-items:center; justify-content:center; }
   .mood-btn.active{ border-color:var(--green); background: var(--green-tint); transform:scale(1.08); }
   .field-label{ font-size:12px; color:var(--ink-soft); margin: 2px 0 6px; font-weight:700; }
-  .field-input{ width:100%; padding:11px 12px; border:1.5px solid var(--line); border-radius:12px; font-size:16px; background: var(--bg); margin-bottom:14px; }
+  .field-input{ width:100%; padding:11px 12px; border:1.5px solid var(--line); border-radius:12px; font-size:13.5px; background: var(--bg); margin-bottom:14px; }
   textarea.field-input{ min-height:100px; resize:vertical; line-height:1.6; }
-  /* ---------- Date fields ----------
-     Trying to center the TEXT inside a native <input type=date> only ever
-     works partway across iOS Safari versions (its internal segments aren't
-     really centerable via CSS). Instead: the real date input sits invisible
-     but still fully tappable over the whole box, and a plain centered label
-     on top shows the date - so the visible text is always exactly centered
-     everywhere, and tapping anywhere still opens the native date picker. */
-  .date-field-wrap{ position:relative; }
-  .date-field-wrap .date-field-real{
-    position:absolute; inset:0; width:100%; height:100%; margin:0; padding:0; border:none;
-    background:transparent; color:transparent; -webkit-text-fill-color:transparent; font-size:13.5px;
-  }
-  .date-field-wrap .date-field-fake{ width:100%; text-align:center; pointer-events:none; white-space:nowrap; overflow:hidden; }
-  .date-field-wrap.field-input{ display:flex; align-items:center; justify-content:center; }
-  .date-box{ width:100%; }
+  input[type="date"].field-input{ text-align:center; text-align-last:center; }
+  input[type="date"].field-input::-webkit-date-and-time-value{ text-align:center; }
   .photo-zone{ border:1.5px dashed var(--line); border-radius:14px; padding:14px; text-align:center; margin-bottom:14px; position:relative; background: var(--bg); }
   .photo-preview{ max-width:100%; max-height:180px; border-radius:10px; display:block; margin:0 auto; }
   .photo-zone label{ display:flex; align-items:center; justify-content:center; gap:7px; color: var(--blue-deep); font-size:13px; font-weight:700; padding:14px 0; }
@@ -327,7 +314,7 @@
   .modal-actions .btn-danger{ background: #fff; color: var(--danger); border:1.5px solid var(--danger); }
   .modal-actions.stack{ flex-direction:column; }
   .modal-actions.stack button{ width:100%; display:flex; align-items:center; justify-content:center; gap:6px; }
-  .modal-box input[type=text], .modal-box .date-box, .modal-box input[type=password]{ width:100%; padding:11px 12px; border:1.5px solid var(--line); border-radius:11px; font-size:16px; margin-bottom:12px; }
+  .modal-box input[type=text], .modal-box input[type=date], .modal-box input[type=password]{ width:100%; padding:11px 12px; border:1.5px solid var(--line); border-radius:11px; font-size:13.5px; margin-bottom:12px; }
   .modal-list-entry{ text-align:left; padding:10px 12px; border:1px solid var(--line); border-radius:12px; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between; gap:8px; }
   .toast{ position:fixed; bottom:90px; left:50%; transform:translateX(-50%); background: var(--ink); color:#fff; padding:10px 18px; border-radius:20px; font-size:12.5px; z-index:60; opacity:0; transition:opacity 0.25s; display:flex; align-items:center; gap:7px; max-width:80%; }
   .toast.show{ opacity:0.94; }
@@ -357,7 +344,7 @@
   <div id="loginScreen" class="hide"></div>
   <div id="identityScreen" class="hide"></div>
   <div id="ddaySetupScreen" class="hide"></div>
-  <div id="appRoot" class="hide" style="display:flex; flex-direction:column; min-height:100vh; min-height:100dvh;">
+  <div id="appRoot" class="hide" style="display:flex; flex-direction:column; min-height:100vh;">
     <header class="app-header">
       <div class="header-top">
         <div class="title-wrap">
@@ -436,11 +423,6 @@
 
   firebase.initializeApp(FIREBASE_CONFIG);
   const db = firebase.firestore();
-  // 데이터를 기기에 캐시해둬서, 두 번째 방문부터는 네트워크 응답을 기다리지 않고
-  // 바로 화면에 보여줄 수 있게 해요. 특히 모바일 네트워크에서 체감 속도가
-  // 크게 좋아져요. (사파리 프라이빗 모드 등에서는 지원되지 않을 수 있는데,
-  // 그런 경우엔 그냥 조용히 넘어가고 평소처럼 매번 네트워크로 불러와요.)
-  db.enablePersistence({ synchronizeTabs: true }).catch(()=>{});
   const auth = firebase.auth();
 </script>
 <script>
@@ -935,34 +917,6 @@ function formatDateKor(dateStr){
   const [y,m,d] = dateStr.split('-');
   return y+'.'+m+'.'+d;
 }
-// Builds a date <input> whose native (often mis-aligned) text is invisible,
-// with a plain centered label sitting on top showing the date instead - see
-// the CSS comment above .date-field-wrap for why. wrapClass picks which
-// visual box style to apply ('field-input' for form cards, 'date-box' for
-// modals/onboarding screens).
-function formatDateDisplay(value){
-  if(!value) return '';
-  const p = value.split('-');
-  if(p.length!==3) return value;
-  return parseInt(p[0],10)+'. '+parseInt(p[1],10)+'. '+parseInt(p[2],10)+'.';
-}
-function dateFieldHtml(id, value, opts){
-  opts = opts || {};
-  const wrapClass = opts.wrapClass || '';
-  const maxAttr = opts.max ? (' max="'+opts.max+'"') : '';
-  return '<div class="date-field-wrap '+wrapClass+'">'+
-    '<input type="date" class="date-field-real" id="'+id+'" value="'+value+'"'+maxAttr+'>'+
-    '<div class="date-field-fake" id="'+id+'Fake">'+formatDateDisplay(value)+'</div>'+
-  '</div>';
-}
-function wireDateFieldDisplay(id){
-  const input = document.getElementById(id);
-  const fake = document.getElementById(id+'Fake');
-  if(!input || !fake) return;
-  const update = ()=>{ fake.textContent = formatDateDisplay(input.value); };
-  input.addEventListener('input', update);
-  input.addEventListener('change', update);
-}
 function dayDiff(targetDate){
   const t = new Date(targetDate+'T00:00:00');
   const now = new Date(todayStr()+'T00:00:00');
@@ -1131,61 +1085,46 @@ async function createCouple(names){
       const ref = db.collection('couples').doc(code);
       const existing = await ref.get();
       if(existing.exists) continue; // 코드가 우연히 겹쳤을 때만 다시 시도 (거의 없음)
-      // 커플 문서 저장과, 이 계정을 그 커플에 연결해두는 작업을 동시에 시작해서
-      // 하나씩 순서대로 기다리지 않게 해요.
-      await Promise.all([
-        ref.set({ createdAt: Date.now(), memberNames: names }),
-        db.collection('users').doc(state.googleUser.uid).set({ coupleCode: code }, { merge:true })
-      ]);
-      return { code, memberNames: names };
+      await ref.set({ createdAt: Date.now(), memberNames: names });
+      await db.collection('users').doc(state.googleUser.uid).set({ coupleCode: code }, { merge:true });
+      return code;
     }catch(e){ /* 다시 시도 */ }
   }
   return null;
 }
-// Returns { code, memberNames } on success, or false if the code doesn't exist.
+// Returns the couple's (normalized) code on success, or false if the code
+// doesn't exist.
 async function joinCouple(rawCode){
   if(!state.googleUser) return false;
   const code = String(rawCode||'').trim().toUpperCase();
   if(!code) return false;
-  let memberNames = null;
   try{
     const ref = db.collection('couples').doc(code);
     const doc = await ref.get();
-    if(doc.exists){
-      memberNames = doc.data().memberNames || [];
-    } else if(code === LEGACY_COUPLE_CODE){
-      // 엉지·세비가 처음 이 코드로 들어올 때만, 지금까지 쓰던 데이터를 위한
-      // 커플 문서를 하나 만들어줘요 (실제 일기/사진은 그대로 appData에 남아있어요).
-      memberNames = ['엉지','세비'];
-      await ref.set({ createdAt: Date.now(), memberNames });
-    } else {
-      return false;
+    if(!doc.exists){
+      if(code === LEGACY_COUPLE_CODE){
+        // 엉지·세비가 처음 이 코드로 들어올 때만, 지금까지 쓰던 데이터를 위한
+        // 커플 문서를 하나 만들어줘요 (실제 일기/사진은 그대로 appData에 남아있어요).
+        await ref.set({ createdAt: Date.now(), memberNames: ['엉지','세비'] });
+      } else {
+        return false;
+      }
     }
   }catch(e){ return false; }
-  // 이 계정을 커플에 연결하는 건 화면 전환을 막지 않도록 기다리지 않고 흘려보내요 -
-  // 실패해도 치명적이지 않고(다음에 코드를 다시 입력하면 되니까), 성공 여부를
-  // 여기서 기다릴 필요가 없어요.
-  db.collection('users').doc(state.googleUser.uid).set({ coupleCode: code }, { merge:true }).catch(()=>{});
-  return { code, memberNames };
+  try{ await db.collection('users').doc(state.googleUser.uid).set({ coupleCode: code }, { merge:true }); }
+  catch(e){ /* 실패해도 치명적이지 않아요 - 다음에 코드를 다시 입력하면 돼요 */ }
+  return code;
 }
-async function enterCouple(code, memberNames){
+async function enterCouple(code){
   state.coupleCode = code;
-  if(memberNames){
-    state.coupleMemberNames = memberNames;
-  } else {
-    try{
-      const doc = await db.collection('couples').doc(code).get();
-      state.coupleMemberNames = (doc.exists && doc.data().memberNames) ? doc.data().memberNames : [];
-    }catch(e){ state.coupleMemberNames = []; }
-  }
+  try{
+    const doc = await db.collection('couples').doc(code).get();
+    state.coupleMemberNames = (doc.exists && doc.data().memberNames) ? doc.data().memberNames : [];
+  }catch(e){ state.coupleMemberNames = []; }
   try{ localStorage.setItem('local:couple-code', code); }catch(e){}
   document.getElementById('coupleScreen').classList.add('hide');
   document.getElementById('inviteScreen').classList.add('hide');
   document.getElementById('loginScreen').classList.remove('hide');
-  // 이 커플의 일기·지도·문화생활 등 데이터를 지금 바로 미리 불러오기 시작해요 -
-  // PIN을 입력하고 "누구세요"를 고르는 동안 이미 다 준비되도록 해서, 실제
-  // 메인 화면에 들어갈 때는 거의 기다릴 게 없게 만들어요.
-  state.earlyPrefetch = prefetchAppData();
   initAuth();
 }
 // The main "who is this and which couple do they belong to" resolver - runs
@@ -1235,13 +1174,13 @@ function renderCoupleOnboardScreen(mode){
       if(!n1 || !n2){ document.getElementById('coupleCreateMsg').textContent = '둘 다 입력해주세요'; return; }
       const btn = document.getElementById('coupleCreateSubmitBtn');
       btn.disabled = true; btn.textContent = '만드는 중...';
-      const result = await createCouple([n1, n2]);
-      if(!result){
+      const code = await createCouple([n1, n2]);
+      if(!code){
         btn.disabled = false; btn.textContent = '만들기';
         document.getElementById('coupleCreateMsg').textContent = '만들기에 실패했어요. 다시 시도해주세요';
         return;
       }
-      renderCoupleCreatedScreen(result.code, result.memberNames);
+      renderCoupleCreatedScreen(code);
     });
     return;
   }
@@ -1261,13 +1200,13 @@ function renderCoupleOnboardScreen(mode){
       if(!raw){ document.getElementById('coupleJoinMsg').textContent = '코드를 입력해주세요'; return; }
       const btn = document.getElementById('coupleJoinSubmitBtn');
       btn.disabled = true; btn.textContent = '확인 중...';
-      const result = await joinCouple(raw);
-      if(!result){
+      const code = await joinCouple(raw);
+      if(!code){
         btn.disabled = false; btn.textContent = '들어가기';
         document.getElementById('coupleJoinMsg').textContent = '그런 코드를 찾을 수 없어요';
         return;
       }
-      await enterCouple(result.code, result.memberNames);
+      await enterCouple(code);
     };
     document.getElementById('coupleJoinSubmitBtn').addEventListener('click', submit);
     document.getElementById('coupleJoinInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter') submit(); });
@@ -1298,7 +1237,7 @@ function renderCoupleOnboardScreen(mode){
   document.getElementById('coupleJoinBtn').addEventListener('click', ()=>renderCoupleOnboardScreen('join'));
 }
 
-function renderCoupleCreatedScreen(code, memberNames){
+function renderCoupleCreatedScreen(code){
   const screen = document.getElementById('coupleScreen');
   screen.innerHTML =
     '<div class="login-logo">'+I('flag','ic-40')+'</div>'+
@@ -1311,7 +1250,7 @@ function renderCoupleCreatedScreen(code, memberNames){
     try{ await navigator.clipboard.writeText(code); showToast('코드를 복사했어요'); }
     catch(e){ showToast('복사에 실패했어요. 직접 적어서 보내주세요'); }
   });
-  document.getElementById('coupleCodeContinueBtn').addEventListener('click', ()=>enterCouple(code, memberNames));
+  document.getElementById('coupleCodeContinueBtn').addEventListener('click', ()=>enterCouple(code));
 }
 
 /* =================================================================
@@ -1385,12 +1324,10 @@ async function handleGoogleSignIn(onSuccess, btnId){
   if(btn){ btn.disabled = true; if(btn.querySelector('span')) btn.querySelector('span').textContent = '연결하는 중...'; }
   try{
     const provider = new firebase.auth.GoogleAuthProvider();
-    // 팝업 로그인은 컴퓨터 브라우저에서는 잘 되지만, 휴대폰(사파리 포함)에서는
-    // 팝업 창이 작게 뜨거나 다시 안 돌아오는 등 불안정한 경우가 많아서, 휴대폰
-    // 에서는 페이지 전체를 이동시키는 방식(리다이렉트)을 대신 써요.
+    // 홈 화면에 추가해서 쓰는 "독립 실행" 모드에서는 팝업창이 뜨지 않는 경우가
+    // 있어서, 그럴 때는 팝업 대신 페이지 전체를 이동시키는 방식을 써요.
     const isStandalone = window.navigator.standalone || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    if(isStandalone || isMobile){
+    if(isStandalone){
       await auth.signInWithRedirect(provider);
       return; // 구글 로그인 페이지로 이동했다가 돌아오면 아래 boot()에서 이어서 처리돼요
     }
@@ -1485,19 +1422,15 @@ function renderIdentityScreen(){
    D-DAY ONBOARDING (first login only, then pinned in header)
    ================================================================= */
 async function proceedToDdayCheck(){
-  // Reuse the prefetch that enterCouple() already kicked off in the
-  // background (while the person was busy typing their PIN / picking their
-  // name) instead of starting a second, duplicate round of the same reads.
-  const prefetch = state.earlyPrefetch || prefetchAppData();
-  state.earlyPrefetch = null;
-  const [roulette, marks, ddayList] = await prefetch;
-  state.rouletteOptions = roulette;
-  state.dateMarks = marks;
-  state.ddayList = ddayList;
+  // Kick off the app's own data fetches right away instead of waiting for the
+  // dday-list check to finish first - they don't depend on each other, so
+  // there's no reason to make the person wait through them one at a time.
+  const prefetch = prefetchAppData();
+  state.ddayList = await sGet('dday-list', true, []);
   if(state.ddayList.length===0){
     renderDdaySetupScreen();
   } else {
-    mountAppRoot();
+    await showApp(prefetch);
   }
 }
 
@@ -1509,9 +1442,8 @@ function renderDdaySetupScreen(){
     '<h1>디데이를 정해주세요</h1>'+
     '<div class="login-sub">우리가 함께한 첫날, 사귀기 시작한 날처럼<br>계속 세고 싶은 날짜를 하나 정해주세요.<br>상단에 계속 표시돼요.</div>'+
     '<input type="text" id="ddaySetupLabel" placeholder="예: 우리가 만난 날" maxlength="24" value="우리가 만난 날">'+
-    dateFieldHtml('ddaySetupDate', todayStr(), { max: todayStr(), wrapClass:'date-box' })+
+    '<input type="date" id="ddaySetupDate" value="'+todayStr()+'" max="'+todayStr()+'">'+
     '<button class="onboard-btn" id="ddaySetupSubmit">'+I('flag','ic-16')+'설정하고 시작하기</button>';
-  wireDateFieldDisplay('ddaySetupDate');
   document.getElementById('ddaySetupSubmit').addEventListener('click', async ()=>{
     const labelInput = document.getElementById('ddaySetupLabel');
     const dateInput = document.getElementById('ddaySetupDate');
@@ -1519,7 +1451,7 @@ function renderDdaySetupScreen(){
     const date = dateInput.value || todayStr();
     state.ddayList = [{ id: 'd'+Date.now(), label, date }];
     screen.classList.add('hide');
-    mountAppRoot();
+    await showApp();
     sSet('dday-list', state.ddayList, true).then(ok=>{
       if(!ok) showToast('디데이 저장에 실패했어요. 더보기에서 다시 추가해주세요');
     });
@@ -1532,7 +1464,6 @@ function prefetchAppData(){
   return Promise.all([
     sGet('roulette-options', true, ROULETTE_STARTER.slice(0,4)),
     sGet('date-marks', true, []),
-    sGet('dday-list', true, []),
     loadTravelMap(),
     loadDiaryEntries(),
     loadCultureEntries(),
@@ -1540,8 +1471,11 @@ function prefetchAppData(){
   ]);
 }
 
-function mountAppRoot(){
+async function showApp(prefetch){
   document.getElementById('appRoot').classList.remove('hide');
+  const [roulette, marks] = await (prefetch || prefetchAppData());
+  state.rouletteOptions = roulette;
+  state.dateMarks = marks;
   mountTab();
   // Baseline history entry for the home screen, so the very first swipe-back
   // has something sensible to land on instead of an entry from before login.
@@ -1951,7 +1885,7 @@ function fillDiaryForm(){
     '<div class="card">'+
       editingNotice+
       '<div class="field-label">날짜</div>'+
-      dateFieldHtml('diaryDateInput', d.date, { max: todayStr(), wrapClass:'field-input' })+
+      '<input type="date" class="field-input" id="diaryDateInput" value="'+d.date+'" max="'+todayStr()+'">'+
       '<div class="field-label">오늘 기분</div>'+
       '<div class="mood-row">'+MOODS.map(m=>'<button class="mood-btn '+(d.mood===m?'active':'')+'" data-mood="'+m+'">'+m+'</button>').join('')+'</div>'+
       '<div class="field-label">사진</div>'+photoZone+
@@ -1964,7 +1898,6 @@ function fillDiaryForm(){
     b.addEventListener('click', ()=>{ state.diaryDraft.mood = b.dataset.mood; fillDiaryForm(); });
   });
   document.getElementById('diaryDateInput').addEventListener('change', (e)=>{ state.diaryDraft.date = e.target.value; });
-  wireDateFieldDisplay('diaryDateInput');
   document.getElementById('diaryTextInput').addEventListener('input', (e)=>{ state.diaryDraft.text = e.target.value; });
   const photoInput = document.getElementById('photoInput');
   if(photoInput) photoInput.addEventListener('change', (e)=>{
@@ -2254,10 +2187,9 @@ function openAddDdayModal(){
   openModal(
     '<h3>'+I('flag','ic-18')+'디데이 추가</h3>'+
     '<input type="text" id="ddayLabelInput" placeholder="예: 우리가 처음 만난 날" maxlength="24">'+
-    dateFieldHtml('ddayDateInput', todayStr(), { wrapClass:'date-box' })+
+    '<input type="date" id="ddayDateInput" value="'+todayStr()+'">'+
     '<div class="modal-actions"><button class="btn-secondary" id="ddayCancel">취소</button><button class="btn-primary" id="ddaySave">추가</button></div>'
   );
-  wireDateFieldDisplay('ddayDateInput');
   document.getElementById('ddayCancel').onclick = closeModal;
   document.getElementById('ddaySave').onclick = ()=>{
     const label = document.getElementById('ddayLabelInput').value.trim();
@@ -2519,7 +2451,7 @@ function fillCultureForm(){
       '<div class="field-label">제목</div>'+
       '<input type="text" class="field-input" id="cultureTitleInput" placeholder="예: 헤어질 결심, 죽고 싶지만 떡볶이는 먹고 싶어" value="'+escapeHtml(d.title)+'" maxlength="40">'+
       '<div class="field-label">날짜</div>'+
-      dateFieldHtml('cultureDateInput', d.date, { max: todayStr(), wrapClass:'field-input' })+
+      '<input type="date" class="field-input" id="cultureDateInput" value="'+d.date+'" max="'+todayStr()+'">'+
       '<div class="field-label">별점</div>'+starsHtml(d.rating, true)+
       '<div class="field-label">사진</div>'+photoZone+
       '<div class="field-label">한줄 감상</div>'+
@@ -2532,7 +2464,6 @@ function fillCultureForm(){
   });
   document.getElementById('cultureTitleInput').addEventListener('input', (e)=>{ state.cultureDraft.title = e.target.value; });
   document.getElementById('cultureDateInput').addEventListener('change', (e)=>{ state.cultureDraft.date = e.target.value; });
-  wireDateFieldDisplay('cultureDateInput');
   document.getElementById('cultureNoteInput').addEventListener('input', (e)=>{ state.cultureDraft.note = e.target.value; });
   document.querySelectorAll('#cultureFormSection .star-btn').forEach(b=>{
     b.addEventListener('click', ()=>{
