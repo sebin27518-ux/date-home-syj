@@ -1075,10 +1075,7 @@ function waitForAuthUser(){
     const unsub = auth.onAuthStateChanged((user)=>{ unsub(); resolve(user); });
   });
 }
-// 커플을 새로 만들거나 코드로 들어가는 건 Google 로그인이 되어 있어야만
-// 가능해요 (화면에서도 막아두지만, 여기서도 한 번 더 확인해요).
 async function createCouple(names){
-  if(!state.googleUser) return null;
   for(let attempt=0; attempt<3; attempt++){
     const code = randomCoupleCode();
     try{
@@ -1086,7 +1083,9 @@ async function createCouple(names){
       const existing = await ref.get();
       if(existing.exists) continue; // 코드가 우연히 겹쳤을 때만 다시 시도 (거의 없음)
       await ref.set({ createdAt: Date.now(), memberNames: names });
-      await db.collection('users').doc(state.googleUser.uid).set({ coupleCode: code }, { merge:true });
+      if(state.googleUser){
+        await db.collection('users').doc(state.googleUser.uid).set({ coupleCode: code }, { merge:true });
+      }
       return code;
     }catch(e){ /* 다시 시도 */ }
   }
@@ -1095,7 +1094,6 @@ async function createCouple(names){
 // Returns the couple's (normalized) code on success, or false if the code
 // doesn't exist.
 async function joinCouple(rawCode){
-  if(!state.googleUser) return false;
   const code = String(rawCode||'').trim().toUpperCase();
   if(!code) return false;
   try{
@@ -1111,8 +1109,10 @@ async function joinCouple(rawCode){
       }
     }
   }catch(e){ return false; }
-  try{ await db.collection('users').doc(state.googleUser.uid).set({ coupleCode: code }, { merge:true }); }
-  catch(e){ /* 실패해도 치명적이지 않아요 - 다음에 코드를 다시 입력하면 돼요 */ }
+  if(state.googleUser){
+    try{ await db.collection('users').doc(state.googleUser.uid).set({ coupleCode: code }, { merge:true }); }
+    catch(e){ /* 실패해도 치명적이지 않아요 - 다음에 코드를 다시 입력하면 돼요 */ }
+  }
   return code;
 }
 async function enterCouple(code){
@@ -1151,11 +1151,6 @@ function renderCoupleOnboardScreen(mode){
   const screen = document.getElementById('coupleScreen');
   screen.classList.remove('hide');
   document.getElementById('inviteScreen').classList.add('hide');
-
-  // 커플을 만들거나 코드로 들어가려면 반드시 Google 로그인이 먼저 필요해요.
-  // (한 번 커플에 들어간 뒤에는, PIN만으로도 이 기기에서 계속 쓸 수 있어요 -
-  // 이 제한은 "새로 커플을 맺는 시점"에만 적용돼요.)
-  if(!state.googleUser && mode!=='choose'){ mode = 'choose'; }
 
   if(mode==='create'){
     screen.innerHTML =
@@ -1214,27 +1209,20 @@ function renderCoupleOnboardScreen(mode){
   }
 
   // mode === 'choose' (default)
-  if(!state.googleUser){
-    // 아직 로그인 전이라면, 커플 만들기/코드입력 버튼은 아예 안 보여주고
-    // Google 로그인부터 하게 해요.
-    screen.innerHTML =
-      '<div class="login-logo">'+I('logo','ic-40')+'</div>'+
-      '<h1>DATE</h1>'+
-      '<div class="login-sub">커플을 만들거나 커플 코드로 들어가려면<br>먼저 Google 계정으로 로그인해주세요.</div>'+
-      '<button class="google-signin-btn" id="coupleGoogleBtn">'+GOOGLE_G_ICON+'<span>Google 계정으로 계속하기</span></button>';
-    const gbtn = document.getElementById('coupleGoogleBtn');
-    gbtn.addEventListener('click', ()=>handleGoogleSignIn(resolveCouple, 'coupleGoogleBtn'));
-    return;
-  }
   screen.innerHTML =
     '<div class="login-logo">'+I('logo','ic-40')+'</div>'+
     '<h1>DATE</h1>'+
-    '<div class="login-sub">'+escapeHtml(state.googleUser.displayName||state.googleUser.email||'')+'님, 반가워요!<br>'+
+    '<div class="login-sub">'+(state.googleUser ? escapeHtml(state.googleUser.displayName||state.googleUser.email||'')+'님, 반가워요!<br>' : '')+
       '커플을 새로 만들거나, 이미 있는 커플 코드로 들어갈 수 있어요.</div>'+
     '<button class="onboard-btn" id="coupleCreateBtn">'+I('flag','ic-16')+'커플 만들기</button>'+
-    '<button class="onboard-btn" id="coupleJoinBtn" style="margin-top:10px; background:transparent; color:#fff; border:1.5px solid rgba(255,255,255,0.5);">'+I('pin','ic-16')+'커플 코드로 들어가기</button>';
+    '<button class="onboard-btn" id="coupleJoinBtn" style="margin-top:10px; background:transparent; color:#fff; border:1.5px solid rgba(255,255,255,0.5);">'+I('pin','ic-16')+'커플 코드로 들어가기</button>'+
+    (state.googleUser ? '' :
+      '<div class="login-divider"><span>또는</span></div>'+
+      '<button class="google-signin-btn" id="coupleGoogleBtn">'+GOOGLE_G_ICON+'<span>Google 계정으로 계속하기</span></button>');
   document.getElementById('coupleCreateBtn').addEventListener('click', ()=>renderCoupleOnboardScreen('create'));
   document.getElementById('coupleJoinBtn').addEventListener('click', ()=>renderCoupleOnboardScreen('join'));
+  const gbtn = document.getElementById('coupleGoogleBtn');
+  if(gbtn) gbtn.addEventListener('click', ()=>handleGoogleSignIn(resolveCouple, 'coupleGoogleBtn'));
 }
 
 function renderCoupleCreatedScreen(code){
@@ -1491,7 +1479,7 @@ document.getElementById('settingsBtn').addEventListener('click', ()=>{
     '<button class="btn-secondary" id="switchIdBtn">내 이름 바꾸기 (현재: '+(state.currentUser||'-')+')</button>'+
     '<button class="btn-secondary" id="changePinBtn">비밀번호 변경</button>'+
     '<button class="btn-secondary" id="inviteCodeSettingBtn">초대 코드 설정</button>'+
-    '<button class="btn-danger" id="logoutBtn">로그아웃</button>'+
+    '<button class="btn-secondary" id="logoutBtn">로그아웃</button>'+
     '</div>'
   );
   document.getElementById('switchIdBtn').onclick = ()=>{ closeModal(); openSwitchIdentityModal(); };
@@ -1499,37 +1487,12 @@ document.getElementById('settingsBtn').addEventListener('click', ()=>{
   document.getElementById('inviteCodeSettingBtn').onclick = ()=>{ closeModal(); openInviteCodeSettingModal(); };
   document.getElementById('logoutBtn').onclick = ()=>{
     closeModal();
-    confirmModal(
-      '로그아웃하면 커플 연결이 끊어져요',
-      '이 기기(또는 지금 로그인된 Google 계정)와 지금 커플의 연결이 끊어지고, 처음 화면(커플 코드 입력하기)으로 돌아가요.<br><br>같은 커플로 다시 들어오려면 커플 코드가 필요하니, 미리 적어두셨는지 확인해주세요.',
-      doLogout,
-      '로그아웃'
-    );
+    document.getElementById('appRoot').classList.add('hide');
+    document.getElementById('loginScreen').classList.remove('hide');
+    state.pinBuffer=''; state.pinMode='login';
+    renderLogin('비밀번호 4자리를 입력해주세요.');
   };
 });
-
-// 커플 연결을 끊고 맨 처음 화면(커플 만들기/코드 입력하기)으로 돌아가요.
-// 이 기기가 기억하던 커플 코드와, Google 계정에 연결돼있던 커플 정보를 모두
-// 지워서, 다음에는 코드를 새로 입력해야 들어올 수 있게 해요.
-async function doLogout(){
-  try{ localStorage.removeItem('local:couple-code'); }catch(e){}
-  if(state.googleUser){
-    try{ await db.collection('users').doc(state.googleUser.uid).delete(); }catch(e){ /* 실패해도 로컬 연결은 이미 끊겼어요 */ }
-  }
-  document.getElementById('appRoot').classList.add('hide');
-  document.getElementById('loginScreen').classList.add('hide');
-  document.getElementById('identityScreen').classList.add('hide');
-  document.getElementById('ddaySetupScreen').classList.add('hide');
-  state.coupleCode = null;
-  state.coupleMemberNames = [];
-  state.currentUser = null;
-  state.savedPinCache = null;
-  state.pinBuffer = ''; state.pinMode = null;
-  state.tab = 'home'; state.mapProvince = null;
-  state.diaryEntries = []; state.cultureEntries = []; state.ddayList = []; state.dateMarks = []; state.travelMap = {};
-  renderCoupleOnboardScreen('choose');
-  showToast('커플 연결을 끊었어요');
-}
 
 async function openInviteCodeSettingModal(){
   const current = await sGet('invite-code', true, null, true);
