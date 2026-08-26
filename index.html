@@ -1385,12 +1385,12 @@ async function handleGoogleSignIn(onSuccess, btnId){
   if(btn){ btn.disabled = true; if(btn.querySelector('span')) btn.querySelector('span').textContent = '연결하는 중...'; }
   try{
     const provider = new firebase.auth.GoogleAuthProvider();
-    // 팝업 로그인은 컴퓨터 브라우저에서는 잘 되지만, 휴대폰(사파리 포함)에서는
-    // 팝업 창이 작게 뜨거나 다시 안 돌아오는 등 불안정한 경우가 많아서, 휴대폰
-    // 에서는 페이지 전체를 이동시키는 방식(리다이렉트)을 대신 써요.
+    // 홈 화면에 추가해서 쓰는 "독립 실행" 모드에서는 팝업창이 아예 안 뜨는
+    // 경우가 있어서 그때만 리다이렉트 방식을 써요. 일반 사파리/크롬에서는
+    // 리다이렉트 방식이 오히려 아이폰 사파리의 추적 방지 설정 때문에 화면이
+    // 멈춰버릴 수 있어서, 그 경우엔 원래대로 팝업 방식을 써요.
     const isStandalone = window.navigator.standalone || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    if(isStandalone || isMobile){
+    if(isStandalone){
       await auth.signInWithRedirect(provider);
       return; // 구글 로그인 페이지로 이동했다가 돌아오면 아래 boot()에서 이어서 처리돼요
     }
